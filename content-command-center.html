@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Content Command Center</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #f5f6fa;
+    --surface: #ffffff;
+    --surface2: #f0f1f5;
+    --border: #e2e4ec;
+    --accent: #4f46e5;
+    --accent-light: #ede9fe;
+    --text: #1a1a2e;
+    --muted: #8b8fa8;
+    --danger: #ef4444;
+    --success: #16a34a;
+    --success-light: #dcfce7;
+    --warn: #f59e0b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+
+  .app { display: flex; flex-direction: column; min-height: 100vh; }
+
+  header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--accent); }
+
+  .header-right { display: flex; align-items: center; gap: 10px; }
+
+  .streak-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent-light);
+    border: 1px solid #c4b5fd;
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  nav {
+    display: flex;
+    gap: 4px;
+    padding: 10px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    overflow-x: auto;
+  }
+
+  .nav-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 7px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .nav-btn:hover { background: var(--surface2); color: var(--text); }
+  .nav-btn.active { background: var(--accent); color: #fff; font-weight: 600; }
+
+  main { flex: 1; padding: 24px; max-width: 860px; margin: 0 auto; width: 100%; }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+
+  .card-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  /* Nudge */
+  .nudge {
+    background: linear-gradient(135deg, #ede9fe 0%, #e0e7ff 100%);
+    border: 1px solid #c4b5fd;
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .nudge-text { font-size: 15px; line-height: 1.5; color: var(--text); }
+  .nudge-text strong { color: var(--accent); }
+  .nudge-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+  }
+  .nudge-btn:hover { opacity: 0.85; }
+
+  /* Stats */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 34px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 5px;
+  }
+  .stat-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+  /* Platforms */
+  .platform-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+    color: var(--text);
+  }
+  .platform-badge.selected {
+    border-color: var(--accent);
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* Inputs */
+  .idea-input, textarea.idea-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .idea-input:focus, textarea.idea-input:focus { border-color: var(--accent); background: #fff; }
+  .idea-input::placeholder, textarea.idea-input::placeholder { color: var(--muted); }
+
+  .idea-input-row { display: flex; gap: 10px; margin-bottom: 16px; }
+
+  /* Buttons */
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 11px 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    white-space: nowrap;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+
+  .btn-ghost {
+    background: none;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn-export {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .btn-export:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Ideas */
+  .idea-list { display: flex; flex-direction: column; gap: 10px; }
+  .idea-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .idea-item:hover { border-color: #c4b5fd; box-shadow: 0 2px 8px rgba(79,70,229,0.07); }
+  .idea-item.used { opacity: 0.45; }
+  .idea-content { flex: 1; }
+  .idea-text { font-size: 14px; line-height: 1.5; margin-bottom: 6px; color: var(--text); }
+  .idea-meta { font-size: 11px; color: var(--muted); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .platform-tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border: 1px solid #c4b5fd;
+  }
+  .idea-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  /* Planner */
+  .week-grid { display: flex; flex-direction: column; gap: 10px; }
+  .day-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .day-row.today-row { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+  .day-label-col { min-width: 80px; }
+  .day-name { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: var(--text); }
+  .day-date { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .today-tag { font-size: 10px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+  .day-content { flex: 1; }
+  .day-slot {
+    background: var(--surface2);
+    border: 1.5px dashed var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    min-height: 40px;
+  }
+  .day-slot:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  .day-slot.filled {
+    background: var(--accent-light);
+    border: 1.5px solid #c4b5fd;
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  /* Streak */
+  .streak-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+  .streak-day {
+    aspect-ratio: 1;
+    border-radius: 7px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: default;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: var(--surface2);
+  }
+  .streak-day.posted { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .streak-day.today { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  .streak-day .day-label { font-size: 9px; opacity: 0.7; margin-top: 2px; }
+
+  /* Reminders */
+  .reminder-list { display: flex; flex-direction: column; gap: 10px; }
+  .reminder-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .reminder-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .reminder-sub { font-size: 12px; color: var(--muted); }
+
+  .toggle {
+    width: 42px; height: 24px;
+    background: var(--border);
+    border-radius: 99px;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle.on { background: var(--accent); }
+  .toggle::after {
+    content: '';
+    width: 18px; height: 18px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 3px; left: 3px;
+    transition: left 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle.on::after { left: 21px; }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(2px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 28px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+  .modal h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+  .modal textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 100px;
+    outline: none;
+    margin-bottom: 14px;
+    transition: border-color 0.15s;
+  }
+  .modal textarea:focus { border-color: var(--accent); background: #fff; }
+  .modal-platform-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* Export/Import section */
+  .data-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .data-section h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .data-section p { font-size: 13px; color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
+  .data-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: #fff;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+
+  .empty-state {
+    text-align: center;
+    padding: 36px 20px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .empty-state .emoji { font-size: 32px; margin-bottom: 10px; }
+
+  @media (max-width: 600px) {
+    main { padding: 16px; }
+    .stats-row { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .stat-num { font-size: 26px; }
+    .nudge { flex-direction: column; align-items: flex-start; }
+    header { padding: 14px 16px; }
+    nav { padding: 8px 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="logo">Content<span>.</span></div>
+    <div class="header-right">
+      <div class="streak-pill">🔥 <span id="streakCount">0</span> day streak</div>
+    </div>
+  </header>
+
+  <nav>
+    <button class="nav-btn active" onclick="showTab('today', this)">Today</button>
+    <button class="nav-btn" onclick="showTab('ideas', this)">Idea Dump</button>
+    <button class="nav-btn" onclick="showTab('planner', this)">Weekly Plan</button>
+    <button class="nav-btn" onclick="showTab('streak', this)">Streak</button>
+    <button class="nav-btn" onclick="showTab('reminders', this)">Reminders</button>
+    <button class="nav-btn" onclick="showTab('data', this)">My Data</button>
+  </nav>
+
+  <main>
+
+    <!-- TODAY -->
+    <div class="section active" id="tab-today">
+      <div class="nudge" id="todayNudge">
+        <div class="nudge-text" id="nudgeText"><strong>Good day!</strong> Have you posted today?</div>
+        <button class="nudge-btn" onclick="markPostedToday()">✓ Mark as Posted</button>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="statStreak">0</div><div class="stat-label">Day Streak</div></div>
+        <div class="stat-card"><div class="stat-num" id="statWeek">0</div><div class="stat-label">This Week</div></div>
+        <div class="stat-card"><div class="stat-num" id="statIdeas">0</div><div class="stat-label">Saved Ideas</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Quick Capture — Save an idea instantly</div>
+        <div class="idea-input-row">
+          <input class="idea-input" id="quickIdeaInput" placeholder="What's on your mind? Drop an idea..." />
+          <button class="btn-primary" onclick="quickSaveIdea()">Save</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Today's Plan</div>
+        <div id="todayPlan" class="empty-state"><div class="emoji">📅</div>Go to <strong>Weekly Plan</strong> to schedule something for today.</div>
+      </div>
+    </div>
+
+    <!-- IDEAS -->
+    <div class="section" id="tab-ideas">
+      <h2>Idea Dump</h2>
+      <div class="card">
+        <div class="card-title">Drop a new idea</div>
+        <textarea class="idea-input" id="newIdeaText" placeholder="Type your post idea, topic, or a rough sentence..." style="min-height:80px;resize:vertical;margin-bottom:12px;"></textarea>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;" id="ideaPlatformRow">
+          <div class="platform-badge" data-platform="LinkedIn" onclick="togglePlatform(this)">💼 LinkedIn</div>
+          <div class="platform-badge" data-platform="Twitter/X" onclick="togglePlatform(this)">𝕏 Twitter/X</div>
+          <div class="platform-badge" data-platform="Instagram" onclick="togglePlatform(this)">📸 Instagram</div>
+          <div class="platform-badge" data-platform="Facebook" onclick="togglePlatform(this)">👤 Facebook</div>
+          <div class="platform-badge" data-platform="TikTok" onclick="togglePlatform(this)">🎵 TikTok</div>
+        </div>
+        <button class="btn-primary" onclick="saveIdea()">Save Idea</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Saved Ideas</div>
+        <div class="idea-list" id="ideaList"><div class="empty-state"><div class="emoji">💡</div>No ideas yet. Drop one above!</div></div>
+      </div>
+    </div>
+
+    <!-- PLANNER -->
+    <div class="section" id="tab-planner">
+      <h2>Weekly Plan</h2>
+      <div class="week-grid" id="weekGrid"></div>
+    </div>
+
+    <!-- STREAK -->
+    <div class="section" id="tab-streak">
+      <h2>Posting Streak</h2>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="streakStat">0</div><div class="stat-label">Current Streak</div></div>
+        <div class="stat-card"><div class="stat-num" id="bestStreakStat">0</div><div class="stat-label">Best Streak</div></div>
+        <div class="stat-card"><div class="stat-num" id="totalPostedStat">0</div><div class="stat-label">Total Days</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Last 28 Days</div>
+        <div class="streak-grid" id="streakGrid"></div>
+        <div style="display:flex;gap:16px;margin-top:14px;font-size:12px;color:var(--muted);">
+          <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--accent);margin-right:5px;vertical-align:middle;"></span>Posted</span>
+          <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--surface2);border:1px solid var(--border);margin-right:5px;vertical-align:middle;"></span>Missed</span>
+          <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--accent-light);border:1px solid var(--accent);margin-right:5px;vertical-align:middle;"></span>Today</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- REMINDERS -->
+    <div class="section" id="tab-reminders">
+      <h2>Reminders</h2>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:18px;">Toggle nudges on or off. Full phone notifications become available once you host the app.</p>
+      <div class="reminder-list" id="reminderList"></div>
+    </div>
+
+    <!-- DATA -->
+    <div class="section" id="tab-data">
+      <h2>My Data</h2>
+
+      <div class="data-section">
+        <h3>📤 Export your data</h3>
+        <p>Download all your ideas, plans, and streak data as a file. Do this before clearing your browser cache so nothing is lost.</p>
+        <div class="data-btns">
+          <button class="btn-primary" onclick="exportData()">⬇ Download Backup</button>
+        </div>
+      </div>
+
+      <div class="data-section">
+        <h3>📥 Import data</h3>
+        <p>Restore from a backup file you previously exported. This will replace your current data.</p>
+        <div class="data-btns">
+          <label class="btn-primary" style="cursor:pointer;">
+            ⬆ Choose Backup File
+            <input type="file" accept=".json" onchange="importData(event)" style="display:none;" />
+          </label>
+        </div>
+      </div>
+
+      <div class="data-section" style="border-color:#fecaca;background:#fff5f5;">
+        <h3 style="color:var(--danger);">🗑 Clear all data</h3>
+        <p>Permanently delete all your ideas, plans, and streak history. This cannot be undone — export first!</p>
+        <div class="data-btns">
+          <button class="btn-ghost" style="color:var(--danger);border-color:#fecaca;" onclick="clearData()">Clear Everything</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Plan Modal -->
+<div class="modal-overlay" id="planModal">
+  <div class="modal">
+    <h3 id="planModalTitle">Plan this day</h3>
+    <textarea id="planContent" placeholder="What will you post? Write a draft or just a rough idea..."></textarea>
+    <div class="modal-platform-row" id="planPlatformRow">
+      <div class="platform-badge" data-platform="LinkedIn" onclick="togglePlatform(this)">💼 LinkedIn</div>
+      <div class="platform-badge" data-platform="Twitter/X" onclick="togglePlatform(this)">𝕏 Twitter/X</div>
+      <div class="platform-badge" data-platform="Instagram" onclick="togglePlatform(this)">📸 Instagram</div>
+      <div class="platform-badge" data-platform="Facebook" onclick="togglePlatform(this)">👤 Facebook</div>
+      <div class="platform-badge" data-platform="TikTok" onclick="togglePlatform(this)">🎵 TikTok</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closePlanModal()">Cancel</button>
+      <button class="btn-primary" onclick="savePlan()">Save Plan</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ──
+let state = JSON.parse(localStorage.getItem('ccc_state') || 'null') || {
+  ideas: [],
+  plans: {},
+  postedDays: [],
+  reminders: [
+    { id: 1, title: 'Morning nudge', sub: 'Reminds you to plan your post for the day', time: '09:00', on: true },
+    { id: 2, title: 'Evening check-in', sub: 'Did you post today? Keep the streak!', time: '20:00', on: true },
+    { id: 3, title: 'Midday idea flash', sub: 'A random prompt to spark content ideas', time: '13:00', on: false },
+  ]
+};
+
+function save() { localStorage.setItem('ccc_state', JSON.stringify(state)); }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── Helpers ──
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+function dateLabel(d) { return new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); }
+
+function getWeekDays() {
+  const days = [], now = new Date();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday); d.setDate(monday.getDate() + i);
+    days.push(d.toISOString().split('T')[0]);
+  }
+  return days;
+}
+
+function calcStreak() {
+  const posted = new Set(state.postedDays);
+  let streak = 0, d = new Date();
+  while (true) {
+    const key = d.toISOString().split('T')[0];
+    if (posted.has(key)) { streak++; d.setDate(d.getDate() - 1); } else break;
+  }
+  return streak;
+}
+
+function calcBestStreak() {
+  if (!state.postedDays.length) return 0;
+  const sorted = [...state.postedDays].sort();
+  let best = 1, cur = 1;
+  for (let i = 1; i < sorted.length; i++) {
+    const diff = (new Date(sorted[i]) - new Date(sorted[i-1])) / 86400000;
+    if (diff === 1) { cur++; if (cur > best) best = cur; } else cur = 1;
+  }
+  return best;
+}
+
+// ── Navigation ──
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  render();
+}
+
+function showTabDirect(id) {
+  const idx = ['today','ideas','planner','streak','reminders','data'].indexOf(id);
+  showTab(id, document.querySelectorAll('.nav-btn')[idx]);
+}
+
+// ── Mark posted ──
+function markPostedToday() {
+  const today = todayStr();
+  if (!state.postedDays.includes(today)) { state.postedDays.push(today); save(); }
+  showToast('✓ Marked as posted today!');
+  render();
+}
+
+// ── Platforms ──
+function togglePlatform(el) { el.classList.toggle('selected'); }
+function getSelectedPlatforms(rowId) {
+  return [...document.querySelectorAll(`#${rowId} .platform-badge.selected`)].map(b => b.dataset.platform);
+}
+
+// ── Ideas ──
+function saveIdea() {
+  const text = document.getElementById('newIdeaText').value.trim();
+  if (!text) return;
+  const platforms = getSelectedPlatforms('ideaPlatformRow');
+  state.ideas.unshift({ id: Date.now(), text, platforms, used: false, date: todayStr() });
+  save();
+  document.getElementById('newIdeaText').value = '';
+  document.querySelectorAll('#ideaPlatformRow .platform-badge').forEach(b => b.classList.remove('selected'));
+  renderIdeas(); updateStats();
+  showToast('💡 Idea saved!');
+}
+
+function quickSaveIdea() {
+  const input = document.getElementById('quickIdeaInput');
+  const text = input.value.trim();
+  if (!text) return;
+  state.ideas.unshift({ id: Date.now(), text, platforms: [], used: false, date: todayStr() });
+  save(); input.value = ''; updateStats();
+  showToast('💡 Idea saved!');
+}
+
+function markIdeaUsed(id) {
+  const idea = state.ideas.find(i => i.id === id);
+  if (idea) { idea.used = !idea.used; save(); renderIdeas(); }
+}
+
+function deleteIdea(id) {
+  state.ideas = state.ideas.filter(i => i.id !== id);
+  save(); renderIdeas(); updateStats();
+}
+
+function renderIdeas() {
+  const list = document.getElementById('ideaList');
+  if (!state.ideas.length) {
+    list.innerHTML = '<div class="empty-state"><div class="emoji">💡</div>No ideas yet. Drop one above!</div>'; return;
+  }
+  list.innerHTML = state.ideas.map(idea => `
+    <div class="idea-item ${idea.used ? 'used' : ''}">
+      <div class="idea-content">
+        <div class="idea-text">${idea.text}</div>
+        <div class="idea-meta">
+          <span>${dateLabel(idea.date)}</span>
+          ${idea.platforms.map(p => `<span class="platform-tag">${p}</span>`).join('')}
+          ${idea.used ? '<span style="color:var(--success);font-weight:600;">✓ Used</span>' : ''}
+        </div>
+      </div>
+      <div class="idea-actions">
+        <button class="btn-ghost" onclick="markIdeaUsed(${idea.id})">${idea.used ? 'Undo' : '✓ Used'}</button>
+        <button class="btn-ghost" style="color:var(--danger);border-color:#fecaca;" onclick="deleteIdea(${idea.id})">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Planner ──
+let planningDay = null;
+
+function openPlanModal(dateStr) {
+  planningDay = dateStr;
+  const existing = state.plans[dateStr];
+  document.getElementById('planModalTitle').textContent = 'Plan for ' + dateLabel(dateStr);
+  document.getElementById('planContent').value = existing ? existing.content : '';
+  document.querySelectorAll('#planPlatformRow .platform-badge').forEach(b => {
+    b.classList.toggle('selected', existing ? existing.platforms.includes(b.dataset.platform) : false);
+  });
+  document.getElementById('planModal').classList.add('open');
+}
+
+function closePlanModal() {
+  document.getElementById('planModal').classList.remove('open');
+  planningDay = null;
+}
+
+function savePlan() {
+  if (!planningDay) return;
+  const content = document.getElementById('planContent').value.trim();
+  if (!content) { closePlanModal(); return; }
+  state.plans[planningDay] = { content, platforms: getSelectedPlatforms('planPlatformRow') };
+  save(); closePlanModal(); renderPlanner(); renderToday();
+  showToast('📅 Plan saved!');
+}
+
+function renderPlanner() {
+  const grid = document.getElementById('weekGrid');
+  const days = getWeekDays(), today = todayStr();
+  const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  grid.innerHTML = days.map((d, i) => {
+    const plan = state.plans[d], isToday = d === today, posted = state.postedDays.includes(d);
+    return `
+      <div class="day-row ${isToday ? 'today-row' : ''}">
+        <div class="day-label-col">
+          <div class="day-name">${dayNames[i]}</div>
+          <div class="day-date">${dateLabel(d)}</div>
+          ${isToday ? '<div class="today-tag">Today</div>' : ''}
+          ${posted ? '<div style="font-size:11px;color:var(--success);font-weight:600;margin-top:4px;">✓ Posted</div>' : ''}
+        </div>
+        <div class="day-content">
+          ${plan
+            ? `<div class="day-slot filled" onclick="openPlanModal('${d}')">
+                <div style="font-size:13px;margin-bottom:4px;">${plan.content}</div>
+                <div style="font-size:11px;color:var(--muted);">${plan.platforms.join(', ') || 'No platform set'}</div>
+               </div>`
+            : `<div class="day-slot" onclick="openPlanModal('${d}')">+ Add post plan</div>`}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── Streak ──
+function renderStreakGrid() {
+  const grid = document.getElementById('streakGrid');
+  const posted = new Set(state.postedDays), today = todayStr(), cells = [];
+  for (let i = 27; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const key = d.toISOString().split('T')[0];
+    cells.push(`
+      <div class="streak-day ${posted.has(key) ? 'posted' : key === today ? 'today' : ''}" title="${key}">
+        ${d.getDate()}<span class="day-label">${['S','M','T','W','T','F','S'][d.getDay()]}</span>
+      </div>`);
+  }
+  grid.innerHTML = cells.join('');
+  const streak = calcStreak(), best = calcBestStreak();
+  document.getElementById('streakStat').textContent = streak;
+  document.getElementById('bestStreakStat').textContent = best;
+  document.getElementById('totalPostedStat').textContent = state.postedDays.length;
+}
+
+// ── Reminders ──
+function renderReminders() {
+  document.getElementById('reminderList').innerHTML = state.reminders.map(r => `
+    <div class="reminder-item">
+      <div>
+        <div class="reminder-title">${r.title}</div>
+        <div class="reminder-sub">${r.sub} · ${r.time}</div>
+      </div>
+      <button class="toggle ${r.on ? 'on' : ''}" onclick="toggleReminder(${r.id})"></button>
+    </div>`).join('');
+}
+
+function toggleReminder(id) {
+  const r = state.reminders.find(r => r.id === id);
+  if (r) { r.on = !r.on; save(); renderReminders(); }
+}
+
+// ── Today ──
+function renderToday() {
+  const today = todayStr(), posted = state.postedDays.includes(today);
+  const nudge = document.getElementById('todayNudge'), nudgeText = document.getElementById('nudgeText');
+  if (posted) {
+    nudge.style.background = 'linear-gradient(135deg, #dcfce7 0%, #d1fae5 100%)';
+    nudge.style.borderColor = '#86efac';
+    nudgeText.innerHTML = `<strong style="color:var(--success)">✓ Posted today!</strong> Amazing work. Keep the streak going tomorrow.`;
+  } else {
+    nudge.style.background = '';
+    nudge.style.borderColor = '';
+    const streak = calcStreak();
+    nudgeText.innerHTML = streak > 0
+      ? `You're on a <strong>${streak}-day streak</strong>. Don't break it — post something today!`
+      : `<strong>Good day!</strong> Have you posted today? Start your streak now.`;
+  }
+  const plan = state.plans[today], planDiv = document.getElementById('todayPlan');
+  if (plan) {
+    planDiv.className = '';
+    planDiv.innerHTML = `
+      <div style="font-size:14px;line-height:1.6;margin-bottom:8px;color:var(--text);">${plan.content}</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">${plan.platforms.join(', ') || ''}</div>
+      <button class="btn-primary" onclick="markPostedToday()">✓ Mark as Posted</button>`;
+  } else {
+    planDiv.className = 'empty-state';
+    planDiv.innerHTML = `<div class="emoji">📅</div>No plan yet for today.<br><span style="cursor:pointer;color:var(--accent);font-weight:600;" onclick="showTabDirect('planner')">Go to Weekly Plan →</span>`;
+  }
+}
+
+// ── Stats ──
+function updateStats() {
+  const streak = calcStreak();
+  document.getElementById('streakCount').textContent = streak;
+  document.getElementById('statStreak').textContent = streak;
+  document.getElementById('statWeek').textContent = getWeekDays().filter(d => state.postedDays.includes(d)).length;
+  document.getElementById('statIdeas').textContent = state.ideas.filter(i => !i.used).length;
+}
+
+// ── Export / Import / Clear ──
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `content-backup-${todayStr()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ Backup downloaded!');
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!imported.ideas || !imported.plans || !imported.postedDays) throw new Error('Invalid file');
+      state = imported;
+      save(); render();
+      showToast('✅ Data restored successfully!');
+    } catch {
+      showToast('❌ Invalid backup file. Please try again.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function clearData() {
+  if (!confirm('This will delete ALL your data permanently. Are you sure?')) return;
+  state = { ideas: [], plans: {}, postedDays: [], reminders: state.reminders };
+  save(); render();
+  showToast('🗑 All data cleared.');
+}
+
+// ── Master render ──
+function render() {
+  renderToday(); renderIdeas(); renderPlanner();
+  renderStreakGrid(); renderReminders(); updateStats();
+}
+
+render();
+</script>
+</body>
+</html>
